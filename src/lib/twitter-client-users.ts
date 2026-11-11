@@ -268,10 +268,11 @@ export function withUsers<TBase extends AbstractConstructor<TwitterClientBase>>(
           const nameMatch = SETTINGS_NAME_REGEX.exec(html);
 
           const username = usernameMatch?.[1];
-          const userId = idMatch?.[1];
+          const userId = idMatch?.[1] ?? this.cookieUserId;
           const name = nameMatch?.[1]?.replace(/\\"/g, '"');
 
           if (username && userId) {
+            this.clientUserId = userId;
             return {
               success: true,
               user: {
@@ -286,6 +287,19 @@ export function withUsers<TBase extends AbstractConstructor<TwitterClientBase>>(
         } catch (error) {
           lastError = error instanceof Error ? error.message : String(error);
         }
+      }
+
+      // Last resort: the `twid` cookie carries the numeric user ID even when X hides it elsewhere.
+      if (this.cookieUserId) {
+        this.clientUserId = this.cookieUserId;
+        return {
+          success: true,
+          user: {
+            id: this.cookieUserId,
+            username: '',
+            name: '',
+          },
+        };
       }
 
       return {

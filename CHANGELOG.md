@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.8.1 — 2026-11-11
+
+### Fixed
+- `whoami`, `likes`, `mentions` and other commands that need the current user work again: X removed the `account/settings.json` / `verify_credentials.json` endpoints and now embeds string-escaped JSON on the settings page. The settings-page parser handles escaped JSON, and the user ID falls back to the `twid` cookie (or `TWITTER_USER_ID` / `TWID` env vars).
+
 ## 0.8.0 — 2026-01-19
 
 ### Added

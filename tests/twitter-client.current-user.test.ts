@@ -133,4 +133,34 @@ describe('TwitterClient getCurrentUser', () => {
     expect(result.user?.username).toBe('fallback');
     expect(result.user?.id).toBe('999');
   });
+  it('parses escaped settings page JSON and fills the ID from the twid cookie', async () => {
+    const notFound = { ok: false, status: 404, text: async () => 'not found' };
+    mockFetch
+      .mockResolvedValueOnce(notFound)
+      .mockResolvedValueOnce(notFound)
+      .mockResolvedValueOnce(notFound)
+      .mockResolvedValueOnce(notFound)
+      .mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        text: async () =>
+          '<script>window.x="{\\"id\\":42,\\"name\\":\\"Escaped Name\\",\\"screen_name\\":\\"escaped\\"}"</script>',
+      });
+
+    const client = new TwitterClient({ cookies: { ...validCookies, userId: '424242' } });
+    const result = await client.getCurrentUser();
+
+    expect(result.success).toBe(true);
+    expect(result.user).toEqual({ id: '424242', username: 'escaped', name: 'Escaped Name' });
+  });
+
+  it('falls back to the twid cookie user ID when nothing else works', async () => {
+    mockFetch.mockImplementation(async () => ({ ok: false, status: 404, text: async () => 'not found' }));
+
+    const client = new TwitterClient({ cookies: { ...validCookies, userId: '777' } });
+    const result = await client.getCurrentUser();
+
+    expect(result.success).toBe(true);
+    expect(result.user?.id).toBe('777');
+  });
 });

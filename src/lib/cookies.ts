@@ -10,6 +10,8 @@ export interface TwitterCookies {
   ct0: string | null;
   cookieHeader: string | null;
   source: string | null;
+  /** Numeric user ID parsed from the `twid` cookie (u=<id>), when available. */
+  userId?: string | null;
 }
 
 export interface CookieExtractionResult {
@@ -19,10 +21,11 @@ export interface CookieExtractionResult {
 
 export type CookieSource = 'safari' | 'chrome' | 'firefox';
 
-const TWITTER_COOKIE_NAMES = ['auth_token', 'ct0'] as const;
+const TWITTER_COOKIE_NAMES = ['auth_token', 'ct0', 'twid'] as const;
 const TWITTER_URL = 'https://x.com/';
 const TWITTER_ORIGINS: string[] = ['https://x.com/', 'https://twitter.com/'];
 const DEFAULT_COOKIE_TIMEOUT_MS = 30_000;
+const TWID_USER_ID_REGEX = /^"?u=(\d+)"?$/;
 
 function normalizeValue(value: unknown): string | null {
   if (typeof value !== 'string') {
@@ -30,6 +33,20 @@ function normalizeValue(value: unknown): string | null {
   }
   const trimmed = value.trim();
   return trimmed.length > 0 ? trimmed : null;
+}
+
+export function parseTwidUserId(value: string | null | undefined): string | null {
+  if (!value) {
+    return null;
+  }
+  let decoded = value;
+  try {
+    decoded = decodeURIComponent(value);
+  } catch {
+    // keep raw value
+  }
+  const match = TWID_USER_ID_REGEX.exec(decoded.trim());
+  return match?.[1] ?? null;
 }
 
 function cookieHeader(authToken: string, ct0: string): string {
@@ -122,6 +139,10 @@ async function readTwitterCookiesFromBrowser(options: {
 
   const authToken = pickCookieValue(cookies, 'auth_token');
   const ct0 = pickCookieValue(cookies, 'ct0');
+  const userId = parseTwidUserId(pickCookieValue(cookies, 'twid'));
+  if (userId) {
+    out.userId = userId;
+  }
   if (authToken) {
     out.authToken = authToken;
   }
@@ -199,6 +220,10 @@ export async function resolveCredentials(options: {
 
   readEnvCookie(cookies, ['AUTH_TOKEN', 'TWITTER_AUTH_TOKEN'], 'authToken');
   readEnvCookie(cookies, ['CT0', 'TWITTER_CT0'], 'ct0');
+  const envUserId = normalizeValue(process.env.TWITTER_USER_ID) ?? parseTwidUserId(normalizeValue(process.env.TWID));
+  if (envUserId) {
+    cookies.userId = envUserId;
+  }
 
   if (cookies.authToken && cookies.ct0) {
     cookies.cookieHeader = cookieHeader(cookies.authToken, cookies.ct0);

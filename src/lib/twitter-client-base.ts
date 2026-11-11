@@ -22,6 +22,8 @@ export abstract class TwitterClientBase {
   protected clientUuid: string;
   protected clientDeviceId: string;
   protected clientUserId?: string;
+  /** User ID from the `twid` cookie; used as a fallback when X endpoints do not expose it. */
+  protected cookieUserId?: string;
 
   constructor(options: TwitterClientOptions) {
     if (!options.cookies.authToken || !options.cookies.ct0) {
@@ -30,6 +32,7 @@ export abstract class TwitterClientBase {
     this.authToken = options.cookies.authToken;
     this.ct0 = options.cookies.ct0;
     this.cookieHeader = options.cookies.cookieHeader || `auth_token=${this.authToken}; ct0=${this.ct0}`;
+    this.cookieUserId = options.cookies.userId ?? undefined;
     this.userAgent =
       options.userAgent ||
       'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36';

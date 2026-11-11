@@ -1,7 +1,11 @@
 {
   "name": "@steipete/bird",
-  "version": "0.8.0",
+  "version": "0.8.1",
   "description": "CLI tool for tweeting and replying via Twitter/X GraphQL API",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/martin-knap/bird.git"
+  },
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",

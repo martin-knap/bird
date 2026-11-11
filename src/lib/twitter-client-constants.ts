@@ -6,9 +6,10 @@ export const TWITTER_GRAPHQL_POST_URL = 'https://x.com/i/api/graphql';
 export const TWITTER_UPLOAD_URL = 'https://upload.twitter.com/i/media/upload.json';
 export const TWITTER_MEDIA_METADATA_URL = 'https://x.com/i/api/1.1/media/metadata/create.json';
 export const TWITTER_STATUS_UPDATE_URL = 'https://x.com/i/api/1.1/statuses/update.json';
-export const SETTINGS_SCREEN_NAME_REGEX = /"screen_name":"([^"]+)"/;
-export const SETTINGS_USER_ID_REGEX = /"user_id"\s*:\s*"(\d+)"/;
-export const SETTINGS_NAME_REGEX = /"name":"([^"\\]*(?:\\.[^"\\]*)*)"/;
+// The settings page embeds its state as JSON that may itself be string-escaped (\"key\":\"value\").
+export const SETTINGS_SCREEN_NAME_REGEX = /\\*"screen_name\\*"\s*:\s*\\*"([A-Za-z0-9_]+)\\*"/;
+export const SETTINGS_USER_ID_REGEX = /\\*"(?:user_id|id_str)\\*"\s*:\s*\\*"(\d+)\\*"/;
+export const SETTINGS_NAME_REGEX = /\\*"name\\*"\s*:\s*\\*"((?:[^"\\]|\\(?!"))*)\\*"/;
 
 // Query IDs rotate frequently; the values in query-ids.json are refreshed by
 // scripts/update-query-ids.ts. The fallback values keep the client usable if

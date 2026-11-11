@@ -379,3 +379,13 @@ describe('cookies', () => {
     });
   });
 });
+
+describe('parseTwidUserId', () => {
+  it('parses encoded and plain twid values', async () => {
+    const { parseTwidUserId } = await import('../src/lib/cookies.js');
+    expect(parseTwidUserId('u%3D12345')).toBe('12345');
+    expect(parseTwidUserId('"u=678"')).toBe('678');
+    expect(parseTwidUserId('garbage')).toBeNull();
+    expect(parseTwidUserId(null)).toBeNull();
+  });
+});
